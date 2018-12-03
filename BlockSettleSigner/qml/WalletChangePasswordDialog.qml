@@ -129,7 +129,6 @@ CustomDialog {
                         repeat: true
                         onTriggered: {
                             if (progressBar.value <= 0) {
-                                //// ----
                                 stop();
                             }
 
