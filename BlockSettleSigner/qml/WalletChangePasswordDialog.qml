@@ -15,7 +15,7 @@ CustomDialog {
     property WalletInfo wallet
     property string oldPassword
     property string newPassword
-    property bool acceptable: newPasswordWithConfirm.acceptableInput &&
+    readonly property bool acceptable: newPasswordWithConfirm.acceptableInput &&
                               tfOldPassword.text.length
     property int inputLablesWidth: 110
     property AuthSignWalletObject  authSignOld
@@ -27,7 +27,7 @@ CustomDialog {
     onWalletChanged: {
         if (wallet.encType === WalletInfo.Auth) {
             authSignOld = auth.signWallet(wallet.encKey, qsTr("Old password for wallet %1").arg(wallet.name),
-                                         wallet.rootId)
+                                          wallet.rootId)
 
             authSignOld.success.connect(function(key) {
                 oldPassword = key
@@ -56,18 +56,133 @@ CustomDialog {
             }
         }
 
-        ColumnLayout {
+        Item {
+            id: signWithAuthEID
 
+            anchors {
+                fill: parent
+            }
+            visible: stateGroup.state === "signWithAuthEID"
+
+            function start() {
+                progressBar.value = 120;
+                timeoutTimer.restart();
+            }
+
+            Column {
+                id: signWithAuthEIDLayout
+
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
+                    margins: 20
+                }
+                spacing: 4
+
+                CustomLabel {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: qsTr("Activate Auth EID singing")
+                }
+                CustomLabel {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: qsTr("Wallet ID: %1").arg(wallet ? wallet.rootId : '')
+                }
+            }
+
+            Item {
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    leftMargin: 20
+                    rightMargin: 20
+                    verticalCenter: parent.verticalCenter
+                }
+                height: 50
+
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    color: '#1c2835'
+                }
+
+                ProgressBar {
+                    id: progressBar
+
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: 5
+                    from: 120
+                    to: 0
+                    value: 120
+
+                    onVisibleChanged: {
+                        if (!visible) {
+                            timeoutTimer.stop();
+                        }
+                    }
+
+                    Timer {
+                        id: timeoutTimer
+
+                        interval: 1000
+                        repeat: true
+                        onTriggered: {
+                            if (progressBar.value <= 0) {
+                                //// ----
+                                stop();
+                            }
+
+                            progressBar.value--;
+                        }
+                    }
+                }
+
+                CustomLabel {
+                    text: qsTr("%1 seconds left").arg(progressBar.value)
+                }
+            }
+
+            Rectangle {
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+                color: "#141c25"
+                height: 50
+
+                CustomButton {
+                    anchors {
+                        fill: parent
+                        margins: 10
+                    }
+
+                    text: qsTr("Cancel")
+
+                    onClicked: {
+
+                        stateGroup.state = "changePassword";
+                    }
+                }
+            }
+        }
+
+
+
+        ColumnLayout {
             id: mainLayout
+
             Layout.fillWidth: true
             spacing: 10
+            visible: stateGroup.state === "changePassword"
 
-            RowLayout{
+            RowLayout {
                 CustomHeaderPanel{
                     id: panelHeader
                     Layout.preferredHeight: 40
                     Layout.fillWidth: true
-                    text:   qsTr("Change Password for Wallet %1").arg(wallet.name)
+                    text: qsTr("Change Password for Wallet %1").arg(wallet ? wallet.name : '')
 
                 }
             }
@@ -79,7 +194,7 @@ CustomDialog {
                 Layout.rightMargin: 10
 
                 CustomLabel {
-                    visible:    wallet.encType === WalletInfo.Password
+                    visible: wallet && wallet.encType === WalletInfo.Password
                     elide: Label.ElideRight
                     text: qsTr("Current password")
                     wrapMode: Text.WordWrap
@@ -90,7 +205,7 @@ CustomDialog {
                 }
                 CustomTextInput {
                     id: tfOldPassword
-                    visible: wallet.encType === WalletInfo.Password
+                    visible: wallet && wallet.encType === WalletInfo.Password
                     focus: true
                     placeholderText: qsTr("Old Password")
                     echoMode: TextField.Password
@@ -99,12 +214,12 @@ CustomDialog {
 
                 CustomLabel {
                     id: labelAuth
-                    visible: wallet.encType === WalletInfo.Auth
+                    visible: wallet && wallet.encType === WalletInfo.Auth
                     text: qsTr("Sign with Auth eID")
                 }
                 CustomLabel {
                     id: labelAuthStatus
-                    visible: wallet.encType === WalletInfo.Auth
+                    visible: wallet && wallet.encType === WalletInfo.Auth
                     text: authSignOld.status
                 }
             }
@@ -154,14 +269,18 @@ CustomDialog {
                     enabled:    !authSignNew && tiNewAuthId.text.length
                     onClicked: {
                         authSignNew = auth.signWallet(tiNewAuthId.text, qsTr("New password for wallet %1").arg(wallet.name),
-                                                              wallet.rootId)
-                        btnAuthNew.enabled = false
+                                                      wallet.rootId);
+
+                        stateGroup.state = "signWithAuthEID";
+                        signWithAuthEID.start();
+
                         authSignNew.success.connect(function(key) {
-                            acceptable = true
+                            stateGroup.state = "changePassword";
                             newPassword = key
                             text = qsTr("Successfully signed")
                         })
                         authSignNew.error.connect(function(text) {
+                            stateGroup.state = "changePassword";
                             authSignNew = null
                             btnAuthNew.enabled = tiNewAuthId.text.length
                         })
@@ -204,9 +323,9 @@ CustomDialog {
 
                     CustomButton {
                         Layout.fillWidth: true
-                        text:   qsTr("Cancel")
+                        text: qsTr("Cancel")
                         onClicked: {
-                            onClicked: changeWalletPasswordDialog.reject();
+                            changeWalletPasswordDialog.reject();
                         }
                     }
 
@@ -239,5 +358,19 @@ CustomDialog {
     onRejected: {
         authSignOld.cancel()
         authSignNew.cancel()
+    }
+
+    StateGroup {
+        id: stateGroup
+
+        state: 'changePassword'
+        states: [
+            State {
+                name: "changePassword"
+            },
+            State {
+                name: "signWithAuthEID"
+            }
+        ]
     }
 }
