@@ -27,7 +27,7 @@ from build_scripts.websockets_settings    import WebsocketsSettings
 from build_scripts.libchacha20poly1305_settings import LibChaCha20Poly1305Settings
 from build_scripts.botan_settings         import BotanSettings
 
-def generate_project(build_mode, link_mode, build_production, hide_warnings, cmake_flags):
+def generate_project(build_mode, link_mode, build_production, hide_warnings, cmake_flags, download_only, skip_download, skip_configure):
    project_settings = Settings(build_mode, link_mode)
 
    print('Build mode        : {} ( {} )'.format(project_settings.get_build_mode(), ('Production' if build_production else 'Development')))
@@ -56,11 +56,20 @@ def generate_project(build_mode, link_mode, build_production, hide_warnings, cma
    ]
 
    for component in required_3rdparty:
-      if not component.config_component():
+      if not component.config_component(download_only=download_only, skip_download=skip_download):
          print('FAILED to build ' + component.get_package_name() + '. Cancel project generation')
          return 1
 
+   if download_only:
+      print('Exiting after download.')
+      return 0
+
    print('3rd party components ready')
+
+   if skip_configure:
+      print('Skipping project configure.')
+      return 0
+
    print('Start generating project')
    os.chdir(project_settings.get_project_root())
 
@@ -151,7 +160,31 @@ if __name__ == '__main__':
                              action='store',
                              type=str,
                              help='Additional CMake flags. Example: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS=-fuse-ld=gold"')
+   input_parser.add_argument('-download-only',
+                             help='Download and unpack files without running build',
+                             action='store_true',
+                             dest='download_only',
+                             default=False)
+   input_parser.add_argument('-skip-download',
+                             help='Skip download files',
+                             action='store_true',
+                             dest='skip_download',
+                             default=False)
+   input_parser.add_argument('-skip-configure',
+                             help='Skip configure stage for main project',
+                             action='store_true',
+                             dest='skip_configure',
+                             default=False)
 
    args = input_parser.parse_args()
 
-   sys.exit(generate_project(args.build_mode, args.link_mode, args.build_production, args.hide_warnings, args.cmake_flags))
+   sys.exit(generate_project(
+      args.build_mode,
+      args.link_mode,
+      args.build_production,
+      args.hide_warnings,
+      args.cmake_flags,
+      args.download_only,
+      args.skip_download,
+      args.skip_configure,
+   ))
