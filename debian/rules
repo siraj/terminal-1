@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+export DEB_BUILD_OPTIONS = parallel=$(shell nproc)
+
+%:
+	dh $@ --build-system=cmake --parallel --without autoreconf
+
+override_dh_auto_configure:
+	python ./generate.py -skip-download -skip-configure
+	dh_auto_configure -- -DPRODUCTION_BUILD=1 -Wno-dev -DCMAKE_BUILD_TYPE=Release
