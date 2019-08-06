@@ -16,7 +16,6 @@ from build_scripts.settings               import Settings
 from build_scripts.protobuf_settings      import ProtobufSettings
 from build_scripts.gtest_settings         import GtestSettings
 from build_scripts.jom_settings           import JomSettings
-from build_scripts.qt_settings            import QtSettings
 from build_scripts.spdlog_settings        import SpdlogSettings
 from build_scripts.zeromq_settings        import ZeroMQSettings
 from build_scripts.libqrencode_settings   import LibQREncode
@@ -26,6 +25,13 @@ from build_scripts.openssl_settings       import OpenSslSettings
 from build_scripts.websockets_settings    import WebsocketsSettings
 from build_scripts.libchacha20poly1305_settings import LibChaCha20Poly1305Settings
 from build_scripts.botan_settings         import BotanSettings
+
+from build_scripts.qt_settings            import QtBaseSettings
+from build_scripts.qt_settings            import QtDeclarativeSettings
+from build_scripts.qt_settings            import QtQuickControlsSettings
+from build_scripts.qt_settings            import QtQuickControls2Settings
+from build_scripts.qt_settings            import QtChartsSettings
+from build_scripts.qt_settings            import QtSvgSettings
 
 def generate_project(build_mode, link_mode, build_production, hide_warnings, cmake_flags, download_only, skip_download, skip_configure):
    project_settings = Settings(build_mode, link_mode)
@@ -52,7 +58,12 @@ def generate_project(build_mode, link_mode, build_production, hide_warnings, cma
       LibChaCha20Poly1305Settings(project_settings),        # static
       WebsocketsSettings(project_settings),
       BotanSettings(project_settings),
-      QtSettings(project_settings)
+      QtBaseSettings(project_settings),
+      QtDeclarativeSettings(project_settings),
+      QtQuickControlsSettings(project_settings),
+      QtQuickControls2Settings(project_settings),
+      QtChartsSettings(project_settings),
+      QtSvgSettings(project_settings),
    ]
 
    for component in required_3rdparty:
