@@ -3,39 +3,11 @@
 set -o errexit  # exit on error
 set -o nounset  # trigger error when expanding unset variables
 
-binpath="../build_terminal/Release/bin"
-binary=$binpath/blocksettle
-scriptpath="../Scripts"
+dir="$(dirname "$(readlink -f "$0")")"
 
-libprotobuf="${DEV_3RD_ROOT=../../3rd}/release/Protobuf/lib"
+"$dir/debian.sh" ./debian-tmp
 
-if [ ! -x $binary ]; then
-    echo "Release terminal binary $binary doesn't exist!"
-    exit
-fi
-
-if [ ! -d $libprotobuf ]; then
-   echo "Protobuf library dir is missing at $libprotobuf!"
-   exit
-fi
-
-mkdir -p Ubuntu/usr/bin
-mkdir -p Ubuntu/lib/x86_64-linux-gnu
-rm -f Ubuntu/usr/bin/RFQBot.qml
-rm -rf Ubuntu/usr/share/blocksettle/scripts
-mkdir -p Ubuntu/usr/share/blocksettle/scripts
-
-cp $binpath/blocksettle Ubuntu/usr/bin/
-cp $binpath/blocksettle_signer Ubuntu/usr/bin/
-cp $scriptpath/DealerAutoQuote.qml Ubuntu/usr/share/blocksettle/scripts/
-cp $scriptpath/RFQBot.qml Ubuntu/usr/share/blocksettle/scripts/
-cp -P $libprotobuf/libprotobuf.so* Ubuntu/lib/x86_64-linux-gnu/
-cp $libprotobuf/libprotobuf.la Ubuntu/lib/x86_64-linux-gnu/
-
-dpkg -b Ubuntu bsterminal.deb
+dpkg -b ./debian-tmp ./bsterminal.deb
 echo "deb package generated"
 
-rm -f Ubuntu/usr/bin/blocksettle
-rm -f Ubuntu/usr/bin/blocksettle_signer
-rm -f Ubuntu/usr/share/blocksettle/scripts/*
-rm -f Ubuntu/lib/x86_64-linux-gnu/*
+rm -rf ./debian-tmp

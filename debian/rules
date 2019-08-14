@@ -9,3 +9,8 @@ export DEB_BUILD_OPTIONS = parallel=$(shell nproc)
 override_dh_auto_configure:
 	python ./generate.py -skip-download -skip-configure
 	dh_auto_configure -- -DPRODUCTION_BUILD=1 -Wno-dev -DCMAKE_BUILD_TYPE=Release
+
+override_dh_auto_install:
+	dh_auto_install
+	./Deploy/debian.sh "$(CURDIR)/debian/bsterminal/"
+	rm -rf "$(CURDIR)/debian/bsterminal/DEBIAN"
