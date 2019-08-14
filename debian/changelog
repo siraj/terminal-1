@@ -1,5 +1,5 @@
-bsterminal (0.19.1~git20190716.8.570874eb.8) bionic; urgency=medium
+bsterminal (0.20.0~git20190814.6.80185f7d-1) unstable; urgency=medium
 
   * Initial release
 
- -- BlockSettle AB <hello@blocksettle.com>  Thu, 25 Jul 2019 22:40:21 +0000
+ -- BlockSettle AB <hello@blocksettle.com>  Wed, 14 Aug 2019 21:19:39 +0000

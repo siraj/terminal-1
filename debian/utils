@@ -26,6 +26,7 @@ prepare:
 		| grep -n "$${git_commit_hash}" | cut -f1 -d ":"`"; \
 	git_commit_date="`echo $${git_commit_date} | tr -d "-"`"; \
 	deb_version=$${pub_version}~git$${git_commit_date}.$${git_commit_line}.$${git_commit_hash}; \
+	tar -cavf ../$${deb_package}_$${deb_version}.orig.tar.xz --exclude '.git' --exclude 'debian' .
 	dch --check-dirname-level 0 --newversion "$${deb_version}" "New upstream release"; \
 	dch --release ""
 
