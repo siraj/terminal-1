@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
-export DH_VERBOSE = 1
-export DEB_BUILD_OPTIONS = parallel=$(shell nproc)
+export DH_VERBOSE := 1
+export DEB_BUILD_OPTIONS := parallel=$(shell nproc) $(DEB_BUILD_OPTIONS)
 
 %:
 	dh $@ --build-system=cmake --parallel --without autoreconf
@@ -14,3 +14,9 @@ override_dh_auto_install:
 	dh_auto_install
 	./Deploy/debian.sh "$(CURDIR)/debian/bsterminal/"
 	rm -rf "$(CURDIR)/debian/bsterminal/DEBIAN"
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf "$(CURDIR)/generated_proto"
+	rm -rf "$(CURDIR)/build_terminal"
+	rm -rf "$(CURDIR)/external/build_"*
