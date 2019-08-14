@@ -80,7 +80,8 @@ include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 IF( GIT_SHA1 STREQUAL GITDIR-NOTFOUND )
-  MESSAGE( FATAL_ERROR "THis is not a Git repository, but it should be.")
+  MESSAGE( AUTHOR_WARNING "This is not a Git repository, but it should be.")
+  SET(BS_REVISIOIN_SHA1 0 )
 ELSE ()
    # we only take the 8 first characters
   string(SUBSTRING ${GIT_SHA1} 0 8 BS_REVISIOIN_SHA1)
