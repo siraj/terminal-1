@@ -32,12 +32,12 @@ prepare:
 
 distrib:
 	set -e; \
-	git checkout -- debian/changelog; \
+	changelog="$$(cat < debian/changelog)"; \
 	deb_distrib="$${deb_distrib:-unstable}"; \
 	dch --local "~$${deb_distrib}" "No change backport to $${deb_distrib}" --distribution "$${deb_distrib}"; \
 	dpkg-buildpackage -us -uc -S; \
 	deb_version=`dpkg-parsechangelog --show-field Version`; \
-	git checkout -- debian/changelog; \
+	echo "$${changelog}" > debian/changelog; \
 	cd ..; \
 	ln -sf $${deb_package}_$${deb_version}.dsc $${deb_package}~$${deb_distrib}.dsc
 
