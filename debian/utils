@@ -43,6 +43,4 @@ distrib:
 
 backports:
 	deb_distrib=bionic $(MAKE) -f debian/utils distrib
-	deb_distrib=cosmic $(MAKE) -f debian/utils distrib
 	deb_distrib=disco $(MAKE) -f debian/utils distrib
-	deb_distrib=xenial $(MAKE) -f debian/utils distrib
