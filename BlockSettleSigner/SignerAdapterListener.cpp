@@ -318,7 +318,7 @@ bool SignerAdapterListener::onSignOfflineTxRequest(const std::string &data, bs::
       return sendData(signer::SignOfflineTxRequestType, evt.SerializeAsString(), reqId);
    }
 
-   bs::core::wallet::TXSignRequest txSignReq = bs::signer::pbTxRequestToCore(request.tx_request());
+   bs::core::wallet::TXSignRequest txSignReq = bs::signer::pbTxRequestToCore(request.tx_request(), logger_);
 
    if (txSignReq.walletIds.empty()) {
       logger_->error("[SignerAdapterListener::{}] wallet not specified", __func__);
